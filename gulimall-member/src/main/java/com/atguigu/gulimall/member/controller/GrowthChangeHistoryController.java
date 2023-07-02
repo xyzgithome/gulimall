@@ -1,8 +1,10 @@
 package com.atguigu.gulimall.member.controller;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.atguigu.gulimall.member.fegin.CouponFeign;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,13 +32,17 @@ public class GrowthChangeHistoryController {
     @Autowired
     private GrowthChangeHistoryService growthChangeHistoryService;
 
+    @Autowired
+    private CouponFeign couponFeign;
+
     /**
      * 列表
      */
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params){
         PageUtils page = growthChangeHistoryService.queryPage(params);
-
+        // 测试代码
+        R list = couponFeign.list(new LinkedHashMap<>());
         return R.ok().put("page", page);
     }
 
