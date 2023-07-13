@@ -1,0 +1,12 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.0.103:8848
+  application:
+    name: gulimall-third-party
+server:
+  port: 30000
+logging:
+  level:
+    com.atguigu.gulimall: debug
