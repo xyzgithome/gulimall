@@ -1,13 +1,12 @@
 package com.atguigu.gulimall.product.entity;
 
-import com.atguigu.common.valid.AddGroup;
-import com.atguigu.common.valid.UpdateGroup;
-import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.atguigu.common.valid.group.AddGroup;
+import com.atguigu.common.valid.group.UpdateGroup;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
-import java.util.Date;
+
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 import org.hibernate.validator.constraints.URL;
