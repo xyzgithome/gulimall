@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.product.entity;
 
+import com.atguigu.common.valid.annotation.Enums;
 import com.atguigu.common.valid.group.AddGroup;
 import com.atguigu.common.valid.group.UpdateGroup;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -8,7 +9,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
 import org.hibernate.validator.constraints.URL;
 
 import javax.validation.constraints.*;
@@ -24,40 +24,47 @@ import javax.validation.constraints.*;
 @TableName("pms_brand")
 public class BrandEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
+
 	/**
 	 * 品牌id
 	 */
 	@TableId
-	@NotNull(message = "修改品牌id不能为空", groups = {UpdateGroup.class})
 	@Null(message = "新增品牌id必须为空", groups = {AddGroup.class})
+	@NotNull(message = "修改品牌id不能为空", groups = {UpdateGroup.class})
 	private Long brandId;
+
 	/**
 	 * 品牌名
 	 */
-	@NotBlank(message = "品牌名不能为空", groups = {UpdateGroup.class, AddGroup.class})
+	@NotBlank(message = "新增品牌名不能为空", groups = {AddGroup.class})
 	private String name;
+
 	/**
 	 * 品牌logo地址
 	 */
 	@NotBlank(message = "品牌logo地址不能为空", groups = {AddGroup.class})
 	@URL(message = "品牌logo地址必须是一个合法的url", groups = {AddGroup.class, UpdateGroup.class})
 	private String logo;
+
 	/**
 	 * 介绍
 	 */
 	private String descript;
+
 	/**
 	 * 显示状态[0-不显示；1-显示]
 	 */
 	@NotNull(message = "显示状态不能为空", groups = {AddGroup.class})
-	@Range(min = 0, max = 1, message = "显示状态必须等于0或者1", groups = {AddGroup.class, UpdateGroup.class})
+	@Enums(values = {0, 1}, message = "显示状态必须等于0或者1", groups = {AddGroup.class, UpdateGroup.class})
 	private Integer showStatus;
+
 	/**
 	 * 检索首字母
 	 */
 	@NotBlank(message = "检索首字母不能为空", groups = {AddGroup.class})
 	@Pattern(regexp = "^[a-zA-Z]$", message = "检索首字母必须是一个字母", groups = {AddGroup.class, UpdateGroup.class})
 	private String firstLetter;
+
 	/**
 	 * 排序
 	 */
