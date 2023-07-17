@@ -33,7 +33,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<CategoryEntity> allList = baseMapper.selectList(null);
 
         if (CollectionUtils.isEmpty(allList)) {
-            return Collections.EMPTY_LIST;
+            return new ArrayList<>();
         }
 
         return allList.stream().filter(CategoryEntity::isFirstCategory)
@@ -48,4 +48,26 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         // 逻辑删除
         baseMapper.deleteBatchIds(asList);
     }
+
+    @Override
+    public Long[] queryCatelogPath(Long catelogId) {
+        List<Long> paths = new ArrayList<>();
+        List<Long> pathList = getPathList(catelogId, paths);
+
+        Collections.reverse(pathList);
+
+        return pathList.toArray(new Long[0]);
+    }
+
+    private List<Long> getPathList(Long catelogId, List<Long> paths) {
+        paths.add(catelogId);
+
+        CategoryEntity category = this.getById(catelogId);
+
+        if (category.getParentCid() != 0) {
+            getPathList(category.getParentCid(), paths);
+        }
+        return paths;
+    }
+
 }
