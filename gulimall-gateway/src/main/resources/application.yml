@@ -2,7 +2,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.0.103:8848
+        server-addr: 192.168.0.104:8848
     gateway:
       routes:
         - id: baidu_route #http://localhost:88/?url=baidu
