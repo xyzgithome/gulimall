@@ -42,6 +42,17 @@ public class AttrGroupController {
     private AttrService attrService;
 
     /**
+     * 获取属性分组没有关联的其他属性列表
+     */
+    @RequestMapping("/{attrgroupId}/noattr/relation")
+    public R queryNotRelationAttrList(@RequestParam Map<String, Object> params,
+                                      @PathVariable("attrgroupId") String attrgroupId){
+        PageUtils page = attrService.queryNotRelationAttrList(params, attrgroupId);
+
+        return R.ok().put("page", page);
+    }
+
+    /**
      * 属性分组 - 关联关系列表
      */
     @RequestMapping("/{attrgroupId}/attr/relation")

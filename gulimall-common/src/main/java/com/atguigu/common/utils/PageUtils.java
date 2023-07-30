@@ -11,6 +11,7 @@ package com.atguigu.common.utils;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,6 +41,17 @@ public class PageUtils implements Serializable {
 	 * 列表数据
 	 */
 	private List<?> list;
+
+	/**
+	 * 分页
+	 */
+	public PageUtils() {
+		this.list = Collections.emptyList();
+		this.totalCount = 0;
+		this.pageSize = 0;
+		this.currPage = 1;
+		this.totalPage = (int)Math.ceil((double)totalCount/pageSize);
+	}
 	
 	/**
 	 * 分页

@@ -1,5 +1,4 @@
 package com.atguigu.gulimall.product.service.impl;
-
 import com.atguigu.common.constant.ProductConstant;
 import com.atguigu.gulimall.product.entity.AttrAttrgroupRelationEntity;
 import com.atguigu.gulimall.product.entity.AttrGroupEntity;
@@ -31,6 +30,7 @@ import com.atguigu.gulimall.product.entity.AttrEntity;
 import com.atguigu.gulimall.product.service.AttrService;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.atguigu.common.constant.ProductConstant.AttrTypeEnum.ATTR_TYPE_BASE;
 import static com.atguigu.common.constant.ProductConstant.AttrTypeEnum.ATTR_TYPE_SALE;
 
 
@@ -179,5 +179,40 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
             queryWrapper.eq("attr_group_id", attrVO.getAttrGroupId());
             relationService.remove(queryWrapper);
         }
+    }
+
+    @Override
+    public PageUtils queryNotRelationAttrList(Map<String, Object> params, String attrgroupId) {
+        AttrGroupEntity attrGroup = attrGroupService.getById(attrgroupId);
+        if (Objects.isNull(attrGroup)) {
+            return new PageUtils();
+        }
+
+        // 获取cateId对应的所有的group
+        List<Long> attrGroupIdList = attrGroupService.list(new QueryWrapper<AttrGroupEntity>()
+                .eq("catelog_id", attrGroup.getCatelogId())).stream().map(AttrGroupEntity::getAttrGroupId)
+                .collect(Collectors.toList());
+
+        // 根据分组id获取所有的关联属性
+        List<Long> relationAttrIdList = relationService.list(new QueryWrapper<AttrAttrgroupRelationEntity>()
+                .in("attr_group_id", attrGroupIdList)).stream().map(AttrAttrgroupRelationEntity::getAttrId)
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(relationAttrIdList)) {
+            return new PageUtils();
+        }
+
+        // 剔除该分类下已经被关联的基本属性
+        QueryWrapper<AttrEntity> wrapper = new QueryWrapper<AttrEntity>()
+                .eq("catelog_id", attrGroup.getCatelogId())
+                .eq("attr_type", ATTR_TYPE_BASE.getCode())
+                .notIn("attr_id", relationAttrIdList);
+
+        String key = (String) params.get("key");
+        if (StringUtils.isNotBlank(key)) {
+            wrapper.and(w -> w.eq("attr_id", key).or().like("attr_name", key));
+        }
+
+        IPage<AttrEntity> page = this.page(new Query<AttrEntity>().getPage(params), wrapper);
+        return new PageUtils(page);
     }
 }
