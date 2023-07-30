@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.atguigu.common.constant.ProductConstant;
 import com.atguigu.gulimall.product.entity.AttrAttrgroupRelationEntity;
 import com.atguigu.gulimall.product.entity.AttrGroupEntity;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
@@ -30,6 +31,8 @@ import com.atguigu.gulimall.product.entity.AttrEntity;
 import com.atguigu.gulimall.product.service.AttrService;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.atguigu.common.constant.ProductConstant.AttrTypeEnum.ATTR_TYPE_SALE;
+
 
 @Service("attrService")
 public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements AttrService {
@@ -58,6 +61,9 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         AttrEntity attrEntity = new AttrEntity();
         BeanUtils.copyProperties(attr, attrEntity);
         this.save(attrEntity);
+        if (Objects.equals(attr.getAttrType(), ATTR_TYPE_SALE.getCode())) {
+            return;
+        }
 
         AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
         relationEntity.setAttrGroupId(attr.getAttrGroupId());
@@ -66,8 +72,10 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
     }
 
     @Override
-    public PageUtils queryBaseAttrPageList(Map<String, Object> params, Long catelogId) {
+    public PageUtils queryBaseAttrPageList(Map<String, Object> params, Long catelogId, String type) {
         QueryWrapper<AttrEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("attr_type", ProductConstant.AttrTypeEnum.getCodeByType(type));
+
         if (catelogId != 0) {
             queryWrapper.eq("catelog_id", catelogId);
         }
@@ -92,6 +100,10 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
                 attrRspVO.setCatelogName(categoryName);
             }
 
+            if (StringUtils.equalsIgnoreCase(type, ATTR_TYPE_SALE.getType())) {
+                return attrRspVO;
+            }
+
             AttrAttrgroupRelationEntity relationEntity = relationService
                     .getOne(new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", item.getAttrId()));
             if (Objects.nonNull(relationEntity)) {
@@ -110,16 +122,16 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         AttrEntity attrEntity = this.getById(attrId);
         AttrRspVO attrRspVO = new AttrRspVO();
         BeanUtils.copyProperties(attrEntity, attrRspVO);
-
+        attrRspVO.setCatelogPath(categoryService.queryCatelogPath(attrEntity.getCatelogId()));
+        if (Objects.equals(attrEntity.getAttrType(), ATTR_TYPE_SALE.getCode())) {
+            return attrRspVO;
+        }
         AttrAttrgroupRelationEntity relationEntity = relationService.getOne(
                 new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", attrEntity.getAttrId()));
         if (Objects.nonNull(relationEntity)) {
             AttrGroupEntity attrGroupEntity = attrGroupService.getById(relationEntity.getAttrGroupId());
             attrRspVO.setAttrGroupId(attrGroupEntity.getAttrGroupId());
         }
-
-        attrRspVO.setCatelogPath(categoryService.queryCatelogPath(attrEntity.getCatelogId()));
-
         return attrRspVO;
     }
 
@@ -130,6 +142,10 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         AttrEntity attrEntity = new AttrEntity();
         BeanUtils.copyProperties(attr, attrEntity);
         this.updateById(attrEntity);
+
+        if (Objects.equals(attr.getAttrType(), ATTR_TYPE_SALE.getCode())) {
+            return;
+        }
 
         // 修改分组关联
         AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
