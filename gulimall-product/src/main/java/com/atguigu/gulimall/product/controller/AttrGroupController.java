@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.atguigu.gulimall.product.entity.AttrAttrgroupRelationEntity;
 import com.atguigu.gulimall.product.entity.AttrEntity;
+import com.atguigu.gulimall.product.service.AttrAttrgroupRelationService;
 import com.atguigu.gulimall.product.service.AttrService;
 import com.atguigu.gulimall.product.service.CategoryService;
 import com.atguigu.gulimall.product.vo.AttrRelationReqVO;
@@ -40,6 +42,9 @@ public class AttrGroupController {
 
     @Autowired
     private AttrService attrService;
+
+    @Autowired
+    private AttrAttrgroupRelationService relationService;
 
     /**
      * 获取属性分组没有关联的其他属性列表
@@ -89,6 +94,16 @@ public class AttrGroupController {
     @RequestMapping("/save")
     public R save(@RequestBody AttrGroupEntity attrGroup){
 		attrGroupService.save(attrGroup);
+
+        return R.ok();
+    }
+
+    /**
+     * 新增关联关系
+     */
+    @RequestMapping("/attr/relation")
+    public R saveRelationAttr(@RequestBody List<AttrAttrgroupRelationEntity> relationEntityList){
+        relationService.saveRelationAttr(relationEntityList);
 
         return R.ok();
     }
