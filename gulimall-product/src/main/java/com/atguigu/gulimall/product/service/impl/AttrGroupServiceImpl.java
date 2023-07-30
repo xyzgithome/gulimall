@@ -18,18 +18,15 @@ import com.atguigu.gulimall.product.service.AttrGroupService;
 
 @Service("attrGroupService")
 public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEntity> implements AttrGroupService {
-
     @Override
     public PageUtils queryPage(Map<String, Object> params, Long catelogId) {
         QueryWrapper<AttrGroupEntity> wrapper = new QueryWrapper<>();
+        String key = (String) params.get("key");
+        if (StringUtils.isNotBlank(key)) {
+            wrapper.and((item -> item.eq("attr_group_id", key).or().like("attr_group_name", key)));
+        }
         if (catelogId != 0) {
             wrapper.eq("catelog_id", catelogId);
-            String key = String.valueOf(params.get("key"));
-            if (StringUtils.isNotBlank(key)) {
-                wrapper.and((item -> {
-                    item.eq("attr_group_id", key).or().like("attr_group_name", key);
-                }));
-            }
         }
         IPage<AttrGroupEntity> page = this.page(new Query<AttrGroupEntity>().getPage(params), wrapper);
         return new PageUtils(page);
