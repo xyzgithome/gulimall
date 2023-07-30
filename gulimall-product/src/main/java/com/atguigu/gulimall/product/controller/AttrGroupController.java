@@ -1,9 +1,13 @@
 package com.atguigu.gulimall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import com.atguigu.gulimall.product.entity.AttrEntity;
+import com.atguigu.gulimall.product.service.AttrService;
 import com.atguigu.gulimall.product.service.CategoryService;
+import com.atguigu.gulimall.product.vo.AttrRelationReqVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +38,19 @@ public class AttrGroupController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private AttrService attrService;
+
+    /**
+     * 属性分组 - 关联关系列表
+     */
+    @RequestMapping("/{attrgroupId}/attr/relation")
+    public R attrRelation(@PathVariable("attrgroupId") String attrgroupId){
+        List<AttrEntity> attrEntityList = attrService.attrRelation(attrgroupId);
+
+        return R.ok().put("data", attrEntityList);
+    }
+
     /**
      * 列表
      */
@@ -43,7 +60,6 @@ public class AttrGroupController {
 
         return R.ok().put("page", page);
     }
-
 
     /**
      * 信息
@@ -86,4 +102,13 @@ public class AttrGroupController {
         return R.ok();
     }
 
+    /**
+     * 移除 属性分组 关联关系
+     */
+    @RequestMapping("/attr/relation/delete")
+    public R deleteAttrRelation(@RequestBody AttrRelationReqVO[] attrRelationReqVOS){
+        attrService.deleteAttrRelation(attrRelationReqVOS);
+
+        return R.ok();
+    }
 }

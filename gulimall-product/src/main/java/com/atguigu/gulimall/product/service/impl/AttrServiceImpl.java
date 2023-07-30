@@ -7,17 +7,17 @@ import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.AttrAttrgroupRelationService;
 import com.atguigu.gulimall.product.service.AttrGroupService;
 import com.atguigu.gulimall.product.service.CategoryService;
+import com.atguigu.gulimall.product.vo.AttrRelationReqVO;
 import com.atguigu.gulimall.product.vo.AttrRspVO;
 import com.atguigu.gulimall.product.vo.AttrVO;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -157,4 +157,27 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         relationService.saveOrUpdate(relationEntity, wrapper);
     }
 
+    @Override
+    public List<AttrEntity> attrRelation(String attrgroupId) {
+        QueryWrapper<AttrAttrgroupRelationEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("attr_group_id", attrgroupId);
+        List<Long> attrIdList = relationService.list(queryWrapper).stream()
+                .map(AttrAttrgroupRelationEntity::getAttrId).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(attrIdList)) {
+            return Collections.emptyList();
+        }
+
+        return (List<AttrEntity>) this.listByIds(attrIdList);
+    }
+
+    @Override
+    public void deleteAttrRelation(AttrRelationReqVO[] relationReqVOS) {
+        for (AttrRelationReqVO attrVO : relationReqVOS) {
+            QueryWrapper<AttrAttrgroupRelationEntity> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("attr_id", attrVO.getAttrId());
+            queryWrapper.eq("attr_group_id", attrVO.getAttrGroupId());
+            relationService.remove(queryWrapper);
+        }
+    }
 }
