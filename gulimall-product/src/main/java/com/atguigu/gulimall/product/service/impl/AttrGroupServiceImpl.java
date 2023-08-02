@@ -2,7 +2,7 @@ package com.atguigu.gulimall.product.service.impl;
 
 import com.atguigu.gulimall.product.entity.AttrEntity;
 import com.atguigu.gulimall.product.service.AttrService;
-import com.atguigu.gulimall.product.vo.AttrGroupWithAttrsVo;
+import com.atguigu.gulimall.product.vo.AttrGroupWithAttrsVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,12 +49,12 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
      * @return
      */
     @Override
-    public List<AttrGroupWithAttrsVo> getAttrGroupWithAttrsByCatelogId(Long catelogId) {
+    public List<AttrGroupWithAttrsVO> getAttrGroupWithAttrsByCatelogId(Long catelogId) {
         //1、查询分组信息
         List<AttrGroupEntity> attrGroupEntities = this.list(new QueryWrapper<AttrGroupEntity>().eq("catelog_id", catelogId));
         //2、查询所有属性
         return attrGroupEntities.stream().map(item -> {
-            AttrGroupWithAttrsVo attrsVo = new AttrGroupWithAttrsVo();
+            AttrGroupWithAttrsVO attrsVo = new AttrGroupWithAttrsVO();
             BeanUtils.copyProperties(item, attrsVo);
             List<AttrEntity> attrs = attrService.getRelateAttr(attrsVo.getAttrGroupId());
             attrsVo.setAttrs(attrs);

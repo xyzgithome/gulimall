@@ -9,7 +9,7 @@ import com.atguigu.gulimall.product.entity.AttrEntity;
 import com.atguigu.gulimall.product.service.AttrAttrgroupRelationService;
 import com.atguigu.gulimall.product.service.AttrService;
 import com.atguigu.gulimall.product.service.CategoryService;
-import com.atguigu.gulimall.product.vo.AttrGroupWithAttrsVo;
+import com.atguigu.gulimall.product.vo.AttrGroupWithAttrsVO;
 import com.atguigu.gulimall.product.vo.AttrRelationReqVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +48,7 @@ public class AttrGroupController {
         //1、查出当前分类下的所有分组
 
         //2、查出每个分组下的所有属性
-        List<AttrGroupWithAttrsVo> list = attrGroupService.getAttrGroupWithAttrsByCatelogId(catelogId);
+        List<AttrGroupWithAttrsVO> list = attrGroupService.getAttrGroupWithAttrsByCatelogId(catelogId);
         return R.ok().put("data",list);
     }
 
