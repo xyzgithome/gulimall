@@ -5,18 +5,16 @@ spring:
         server-addr: 192.168.0.104:8848
     gateway:
       routes:
-        - id: baidu_route #http://localhost:88/?url=baidu
-          uri: https://www.baidu.com
-          predicates:
-            - Query=url,baidu
-        - id: qq_route #http://localhost:88/?url=qq
-          uri: https://www.qq.com
-          predicates:
-            - Query=url,qq
         - id: product_route
           uri: lb://gulimall-product
           predicates:
             - Path=/api/product/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
+        - id: member_route
+          uri: lb://gulimall-member
+          predicates:
+            - Path=/api/member/**
           filters:
             - RewritePath=/api/(?<segment>.*), /$\{segment}
         - id: third_party_route
