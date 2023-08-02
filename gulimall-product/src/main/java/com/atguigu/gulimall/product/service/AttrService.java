@@ -29,7 +29,7 @@ public interface AttrService extends IService<AttrEntity> {
 
     void updateAttr(AttrVO attr);
 
-    List<AttrEntity> attrRelation(String attrgroupId);
+    List<AttrEntity> getRelateAttr(Long attrgroupId);
 
     void deleteAttrRelation(AttrRelationReqVO[] attrVOS);
 

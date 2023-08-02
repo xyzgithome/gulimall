@@ -158,7 +158,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
     }
 
     @Override
-    public List<AttrEntity> attrRelation(String attrgroupId) {
+    public List<AttrEntity> getRelateAttr(Long attrgroupId) {
         QueryWrapper<AttrAttrgroupRelationEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("attr_group_id", attrgroupId);
         List<Long> attrIdList = relationService.list(queryWrapper).stream()
