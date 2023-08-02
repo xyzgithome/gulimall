@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -78,6 +80,15 @@ public class CategoryBrandRelationServiceImpl extends ServiceImpl<CategoryBrandR
         wrapper.eq("catelog_id", catId);
 
         this.update(categoryBrandRelationEntity, wrapper);
+    }
+
+    @Override
+    public List<BrandEntity> getBrandsByCatId(Long catId) {
+        List<Long> brandIdList = this.list(
+                new QueryWrapper<CategoryBrandRelationEntity>().eq("catelog_id", catId))
+                .stream().map(CategoryBrandRelationEntity::getBrandId).collect(Collectors.toList());
+
+        return (List<BrandEntity>) brandService.listByIds(brandIdList);
     }
 
 }
