@@ -3,6 +3,7 @@ package com.atguigu.gulimall.coupon;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * 1、如何使用Nacos作为配置中心统一管理配置
@@ -50,6 +51,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
+@EnableTransactionManagement
 public class GulimallCouponApplication {
 
     public static void main(String[] args) {
