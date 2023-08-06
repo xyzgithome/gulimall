@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 
 @Data
 public class Bounds {
+    // 金币积分
     private BigDecimal buyBounds;
+    // 成长值积分
     private BigDecimal growBounds;
 }
