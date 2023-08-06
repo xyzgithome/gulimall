@@ -34,21 +34,6 @@ public class CouponController {
     @Autowired
     private CouponService couponService;
 
-    @Value("${coupon.user.name}")
-    private String userName;
-
-    @Value("${coupon.user.age}")
-    private Integer userAge;
-
-    /**
-     * 列表
-     */
-    @RequestMapping("/test")
-    public R test(@RequestParam Map<String, Object> params){
-
-        return R.ok().put("name", userName).put("age", userAge);
-    }
-
     /**
      * 列表
      */

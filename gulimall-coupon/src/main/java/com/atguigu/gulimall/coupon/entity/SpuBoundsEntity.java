@@ -39,6 +39,9 @@ public class SpuBoundsEntity implements Serializable {
 	private BigDecimal buyBounds;
 	/**
 	 * 优惠生效情况[1111（四个状态位，从右到左）;0 - 无优惠，成长积分是否赠送;1 - 无优惠，购物积分是否赠送;2 - 有优惠，成长积分是否赠送;3 - 有优惠，购物积分是否赠送【状态位0：不赠送，1：赠送】]
+	 *
+	 * 1111 代表 无优惠且成长积分赠送;无优惠且购物积分赠送;有优惠且成长积分赠送;有优惠且购物积分赠送
+	 *
 	 */
 	private Integer work;
 
