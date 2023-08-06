@@ -5,6 +5,12 @@ spring:
         server-addr: 192.168.0.104:8848
     gateway:
       routes:
+        - id: ware_route
+          uri: lb://gulimall-ware
+          predicates:
+            - Path=/api/ware/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
         - id: product_route
           uri: lb://gulimall-product
           predicates:
