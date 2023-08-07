@@ -2,13 +2,17 @@ package com.atguigu.gulimall.ware.service.impl;
 
 import com.atguigu.common.constant.WareConstant;
 import com.atguigu.gulimall.ware.entity.PurchaseDetailEntity;
+import com.atguigu.gulimall.ware.service.PurchaseDetailService;
 import com.atguigu.gulimall.ware.vo.MergeVO;
+import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service("purchaseService")
 public class PurchaseServiceImpl extends ServiceImpl<PurchaseDao, PurchaseEntity> implements PurchaseService {
+    @Autowired
+    private PurchaseDetailService purchaseDetailService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -48,39 +54,29 @@ public class PurchaseServiceImpl extends ServiceImpl<PurchaseDao, PurchaseEntity
         return new PageUtils(page);
     }
 
-    @Transactional
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void mergePurchase(MergeVO mergeVo) {
-        Long purchaseId = mergeVo.getPurchaseId();
-        if(purchaseId == null){
+        if(Objects.isNull(mergeVo.getPurchaseId())){
             //1、新建一个
             PurchaseEntity purchaseEntity = new PurchaseEntity();
             purchaseEntity.setStatus(WareConstant.PurchaseStatusEnum.CREATED.getCode());
             purchaseEntity.setCreateTime(new Date());
             purchaseEntity.setUpdateTime(new Date());
             this.save(purchaseEntity);
-            purchaseId = purchaseEntity.getId();
+            purchaseDetailService.batchUpdatePurchaseDetail(purchaseEntity.getId(), mergeVo.getItems());
+            return;
         }
 
-        //TODO 确认采购单状态是0,1才可以合并
-        List<Long> items = mergeVo.getItems();
-        Long finalPurchaseId = purchaseId;
-        if (CollectionUtils.isNotEmpty(items)){
-
+        // 确认采购单状态是0,1才可以合并
+        PurchaseEntity purchase = this.getById(mergeVo.getPurchaseId());
+        if (Objects.equals(WareConstant.PurchaseStatusEnum.CREATED.getCode(), purchase.getStatus())
+            || Objects.equals(WareConstant.PurchaseStatusEnum.ASSIGNED.getCode(), purchase.getStatus())) {
+            purchaseDetailService.batchUpdatePurchaseDetail(mergeVo.getPurchaseId(), mergeVo.getItems());
+            PurchaseEntity purchaseEntity = new PurchaseEntity();
+            purchaseEntity.setId(mergeVo.getPurchaseId());
+            purchaseEntity.setUpdateTime(new Date());
+            this.updateById(purchaseEntity);
         }
-        List<PurchaseDetailEntity> collect = items.stream().map(i -> {
-            PurchaseDetailEntity detailEntity = new PurchaseDetailEntity();
-            detailEntity.setId(i);
-            detailEntity.setPurchaseId(finalPurchaseId);
-            detailEntity.setStatus(WareConstant.PurchaseDetailStatusEnum.ASSIGNED.getCode());
-            return detailEntity;
-        }).collect(Collectors.toList());
-        purchaseDetailService.updateBatchById(collect);
-
-        PurchaseEntity purchaseEntity = new PurchaseEntity();
-        purchaseEntity.setId(purchaseId);
-        purchaseEntity.setUpdateTime(new Date());
-        this.updateById(purchaseEntity);
     }
-
 }
