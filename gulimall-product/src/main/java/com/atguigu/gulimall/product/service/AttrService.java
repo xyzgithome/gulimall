@@ -41,5 +41,7 @@ public interface AttrService extends IService<AttrEntity> {
      * @return PageUtils
      */
     PageUtils queryNotRelationAttrList(Map<String, Object> params, String attrgroupId);
+
+    List<Long> getSearchableAttrList(List<Long> attrIdList);
 }
 

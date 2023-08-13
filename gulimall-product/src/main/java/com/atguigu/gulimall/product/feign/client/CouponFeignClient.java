@@ -1,4 +1,4 @@
-package com.atguigu.gulimall.product.feign;
+package com.atguigu.gulimall.product.feign.client;
 
 import com.atguigu.common.dto.SkuReductionDTO;
 import com.atguigu.common.dto.SpuBoundDTO;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient("gulimall-coupon")
-public interface CouponFeignService {
+public interface CouponFeignClient {
     @PostMapping("coupon/spubounds/save")
     R save(@RequestBody SpuBoundDTO spuBoundDTO);
 

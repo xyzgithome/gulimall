@@ -1,4 +1,6 @@
-package com.atguigu.gulimall.product.exception;
+package com.atguigu.common.exception;
+
+import org.apache.commons.lang3.StringUtils;
 
 /***
  * 错误码和错误信息定义类
@@ -17,22 +19,33 @@ public enum BizCodeEnum {
 
     UNKNOW_EXCEPTION(10000, "系统未知异常"),
 
-    VALID_EXCEPTION(10001, "参数格式校验失败");
+    VALID_EXCEPTION(10001, "参数格式校验失败"),
 
-    private int code;
+    PRODUCT_UP_ERROR(11000, "商品上架异常");
+
+    private Integer code;
     private String msg;
 
-    BizCodeEnum(int code, String msg) {
+    BizCodeEnum(Integer code, String msg) {
         this.code = code;
         this.msg = msg;
     }
 
-    public int getCode() {
+    public Integer getCode() {
         return code;
     }
 
     public String getMsg() {
         return msg;
+    }
+
+    public static Integer getCodeByMsg(String msg) {
+        for (BizCodeEnum value : BizCodeEnum.values()) {
+            if (StringUtils.equals(value.getMsg(), msg)) {
+                return value.getCode();
+            }
+        }
+        return null;
     }
 }
 

@@ -1,6 +1,6 @@
 package com.atguigu.gulimall.ware.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.atguigu.common.dto.SkuHasStockDTO;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
@@ -60,5 +60,30 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         wareSku.setStock(wareSku.getStock() + skuNum);
         this.updateById(wareSku);
     }
+
+    @Override
+    public List<SkuHasStockDTO> getSkusHasStock(List<Long> skuIds) {
+        Map<Long, List<WareSkuEntity>> wareSkuMap = this.list(
+                new QueryWrapper<WareSkuEntity>().in("sku_id", skuIds))
+                .stream().distinct().collect(Collectors.groupingBy(WareSkuEntity::getSkuId));
+
+        return skuIds.stream().map(skuId -> {
+            SkuHasStockDTO vo = new SkuHasStockDTO();
+            vo.setSkuId(skuId);
+            vo.setHasStock(hasStock(wareSkuMap.get(skuId)));
+            return vo;
+        }).collect(Collectors.toList());
+    }
+
+    private Boolean hasStock (List<WareSkuEntity> wareSkuEntityList) {
+        if (CollectionUtils.isEmpty(wareSkuEntityList)) {
+            return false;
+        }
+
+        return wareSkuEntityList.stream().mapToInt(item -> item.getStock() - item.getStockLocked()).sum() > 0;
+    }
+
+
+
 
 }

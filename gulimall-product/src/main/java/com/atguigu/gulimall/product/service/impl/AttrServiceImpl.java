@@ -215,4 +215,11 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         IPage<AttrEntity> page = this.page(new Query<AttrEntity>().getPage(params), wrapper);
         return new PageUtils(page);
     }
+
+    @Override
+    public List<Long> getSearchableAttrList(List<Long> attrIdList) {
+        return this.list(new QueryWrapper<AttrEntity>()
+                .eq("search_type", 1).in("attr_id", attrIdList))
+                .stream().map(AttrEntity::getAttrId).collect(Collectors.toList());
+    }
 }

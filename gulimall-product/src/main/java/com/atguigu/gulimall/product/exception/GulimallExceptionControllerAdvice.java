@@ -1,5 +1,7 @@
 package com.atguigu.gulimall.product.exception;
 
+import com.atguigu.common.exception.BizCodeEnum;
+import com.atguigu.common.exception.GLException;
 import com.atguigu.common.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
@@ -27,6 +29,11 @@ public class GulimallExceptionControllerAdvice {
         });
 
         return R.error(BizCodeEnum.VALID_EXCEPTION.getCode(),BizCodeEnum.VALID_EXCEPTION.getMsg()).put("data",errorMap);
+    }
+
+    @ExceptionHandler(value= GLException.class)
+    public R handleGLException(GLException e){
+        return R.error(e.getCode(), e.getMessage());
     }
 
     @ExceptionHandler(value = Throwable.class)
