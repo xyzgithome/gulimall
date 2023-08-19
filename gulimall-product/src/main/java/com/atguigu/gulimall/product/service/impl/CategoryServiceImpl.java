@@ -69,12 +69,15 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     @Transactional(rollbackFor = Exception.class)
     public void updateCategory(CategoryEntity category) {
         this.updateById(category);
-
         // 同步更新其他关联数据
         if (StringUtils.isNotBlank(category.getName())) {
             categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
         }
+    }
 
+    @Override
+    public List<CategoryEntity> getLevelCategoryList() {
+        return baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
     }
 
     private List<Long> getPathList(Long catelogId, List<Long> paths) {
@@ -87,5 +90,4 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         }
         return paths;
     }
-
 }
