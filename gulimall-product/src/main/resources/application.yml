@@ -22,7 +22,7 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 server:
-  port: 5000
+  port: 8040
 logging:
   level:
     com.atguigu.gulimall: debug

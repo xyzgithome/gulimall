@@ -18,7 +18,7 @@ mybatis-plus:
     db-config:
       id-type: auto
 server:
-  port: 8002
+  port: 8070
 logging:
   level:
     com.atguigu.gulimall: debug
