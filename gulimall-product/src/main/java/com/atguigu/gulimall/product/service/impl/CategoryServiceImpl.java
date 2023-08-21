@@ -1,5 +1,8 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.product.dao.CategoryDao;
@@ -13,6 +16,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,12 +28,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     @Autowired
     private CategoryBrandRelationService categoryBrandRelationService;
 
-//    private static Map<Long, List<CategoryEntity>> cacheMap = new ConcurrentHashMap<>();
-
-//    @PostConstruct
-//    public void init () {
-//        cacheMap = this.list().stream().collect(Collectors.groupingBy(CategoryEntity::getParentCid));
-//    }
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -98,8 +98,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
      */
     @Override
     public Map<String, List<Catelog2Vo>> getCatelogJson() {
-        Map<Long, List<CategoryEntity>> categoryMap = this.list().stream()
-                .collect(Collectors.groupingBy(CategoryEntity::getParentCid));
+        Map<Long, List<CategoryEntity>> categoryMap = getCategoryMap();
 
         //1. 查出所有1级分类
         List<CategoryEntity> categoryOneList = categoryMap.get(0L);
@@ -134,6 +133,19 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                 return catelog2Vo;
             }).collect(Collectors.toList());
         }));
+    }
+
+    private Map<Long, List<CategoryEntity>> getCategoryMap () {
+        String categoryJson = redisTemplate.opsForValue().get("gm:product:category");
+
+        if (StringUtils.isBlank(categoryJson)) {
+            Map<Long, List<CategoryEntity>> categoryMap = this.list()
+                    .stream().collect(Collectors.groupingBy(CategoryEntity::getParentCid));
+            redisTemplate.opsForValue().set("gm:product:category", JSON.toJSONString(categoryMap));
+            return categoryMap;
+        }
+
+        return JSON.parseObject(categoryJson, new TypeReference<Map<Long, List<CategoryEntity>>>(){});
     }
 
     private List<Long> getPathList(Long catelogId, List<Long> paths) {
