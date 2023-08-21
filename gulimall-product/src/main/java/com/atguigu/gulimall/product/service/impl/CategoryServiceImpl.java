@@ -19,11 +19,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
     @Autowired
     private CategoryBrandRelationService categoryBrandRelationService;
+
+//    private static Map<Long, List<CategoryEntity>> cacheMap = new ConcurrentHashMap<>();
+
+//    @PostConstruct
+//    public void init () {
+//        cacheMap = this.list().stream().collect(Collectors.groupingBy(CategoryEntity::getParentCid));
+//    }
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -92,14 +98,17 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
      */
     @Override
     public Map<String, List<Catelog2Vo>> getCatelogJson() {
+        Map<Long, List<CategoryEntity>> categoryMap = this.list().stream()
+                .collect(Collectors.groupingBy(CategoryEntity::getParentCid));
+
         //1. 查出所有1级分类
-        List<CategoryEntity> categoryOneList = getLevelCategoryList();
+        List<CategoryEntity> categoryOneList = categoryMap.get(0L);
 
         //2. 封装数据
         return categoryOneList.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
             // 根据一级分类id查询二级分类
-            List<CategoryEntity> categoryTwoList = baseMapper.selectList(
-                    new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+            List<CategoryEntity> categoryTwoList = categoryMap.get(v.getCatId());
+
 
             if (CollectionUtils.isEmpty(categoryTwoList)) {
                 return Collections.emptyList();
@@ -111,8 +120,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                         v.getCatId().toString(), null, c2.getCatId().toString(), c2.getName());
 
                 //1、找当前二级分类的三级分类封装vo
-                List<CategoryEntity> categoryThreeList = baseMapper.selectList(
-                        new QueryWrapper<CategoryEntity>().eq("parent_cid", c2.getCatId()));
+                List<CategoryEntity> categoryThreeList = categoryMap.get(c2.getCatId());
                 if (CollectionUtils.isEmpty(categoryThreeList)) {
                     return catelog2Vo;
                 }
