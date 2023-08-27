@@ -1,7 +1,6 @@
 package com.atguigu.gulimall.product.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.Query;
@@ -9,11 +8,14 @@ import com.atguigu.gulimall.product.dao.CategoryDao;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryBrandRelationService;
 import com.atguigu.gulimall.product.service.CategoryService;
+import com.atguigu.gulimall.product.service.RedisService;
 import com.atguigu.gulimall.product.vo.Catelog2Vo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -21,15 +23,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service("categoryService")
+@Slf4j
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
     @Autowired
     private CategoryBrandRelationService categoryBrandRelationService;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private RedisService redisService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -98,16 +105,55 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
      */
     @Override
     public Map<String, List<Catelog2Vo>> getCatelogJson() {
-        Map<Long, List<CategoryEntity>> categoryMap = getCategoryMap();
+        String lockKey = "gm:product:category:lock";
+        String lockValue = UUID.randomUUID().toString();
+        try {
+            Map<String, List<Catelog2Vo>> categoryMap;
+
+            categoryMap = getCategoryMapFromRedis();
+            if (MapUtils.isNotEmpty(categoryMap)) {
+                return categoryMap;
+            }
+
+            Boolean isLock = redisService.getDistributeLock(lockKey, lockValue, 5, 10000);
+
+            if (!isLock) {
+                log.error("getCatelogJson get dist lock fail");
+                return new HashMap<>(0);
+            }
+            categoryMap = getCategoryMapFromRedis();
+            if (MapUtils.isNotEmpty(categoryMap)) {
+                return categoryMap;
+            }
+
+            Map<String, List<Catelog2Vo>> resultMap = getCategoryMapFromDB();
+            redisTemplate.opsForValue().set("gm:product:category", JSON.toJSONString(resultMap), 1L, TimeUnit.DAYS);
+            return resultMap;
+        } finally {
+            redisService.releaseLock(lockKey, lockValue);
+        }
+    }
+
+    private Map<String, List<Catelog2Vo>> getCategoryMapFromRedis() {
+        String categoryJson = redisTemplate.opsForValue().get("gm:product:category");
+        if (StringUtils.isNotBlank(categoryJson)) {
+            return JSON.parseObject(categoryJson, new TypeReference<Map<String, List<Catelog2Vo>>>() {
+            });
+        }
+        return null;
+    }
+
+    private Map<String, List<Catelog2Vo>> getCategoryMapFromDB() {
+        Map<Long, List<CategoryEntity>> categoryMap = this.list()
+                .stream().collect(Collectors.groupingBy(CategoryEntity::getParentCid));
 
         //1. 查出所有1级分类
         List<CategoryEntity> categoryOneList = categoryMap.get(0L);
 
         //2. 封装数据
-        return categoryOneList.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+        return categoryOneList.stream().collect(Collectors.toMap(k -> String.valueOf(k.getCatId()), v -> {
             // 根据一级分类id查询二级分类
             List<CategoryEntity> categoryTwoList = categoryMap.get(v.getCatId());
-
 
             if (CollectionUtils.isEmpty(categoryTwoList)) {
                 return Collections.emptyList();
@@ -133,19 +179,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                 return catelog2Vo;
             }).collect(Collectors.toList());
         }));
-    }
-
-    private Map<Long, List<CategoryEntity>> getCategoryMap () {
-        String categoryJson = redisTemplate.opsForValue().get("gm:product:category");
-
-        if (StringUtils.isBlank(categoryJson)) {
-            Map<Long, List<CategoryEntity>> categoryMap = this.list()
-                    .stream().collect(Collectors.groupingBy(CategoryEntity::getParentCid));
-            redisTemplate.opsForValue().set("gm:product:category", JSON.toJSONString(categoryMap));
-            return categoryMap;
-        }
-
-        return JSON.parseObject(categoryJson, new TypeReference<Map<Long, List<CategoryEntity>>>(){});
     }
 
     private List<Long> getPathList(Long catelogId, List<Long> paths) {
