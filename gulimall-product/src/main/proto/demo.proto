@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+// 后续protobuf生成的java代码 一个源文件还是多个源文件  xx.java
+option java_multiple_files = false;
+
+// 指定protobuf生成的类 放置在哪个包中
+option java_package = "com.suns";
+
+// 指定的protobuf生成的外部类的名字（管理内部类【内部类才是真正开发使用】）
+option java_outer_classname = "UserServce";
+
